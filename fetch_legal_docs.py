@@ -4,6 +4,7 @@ import json
 import datetime
 import os
 from urllib.parse import urlparse
+import re
 
 # Create output directories if they don't exist
 os.makedirs("downloaded_pdfs", exist_ok=True)
@@ -17,6 +18,17 @@ except FileNotFoundError:
     print("❌ Error: pdf_links.json not found. Please run scrape_pdf_links.py first.")
     exit(1)
 
+def extract_year_from_text(text):
+    """
+    Searches for the first 4-digit number that looks like a year (e.g., 1999, 2015)
+    in the first 1000 characters of the text for efficiency.
+    """
+    # Regex for a 4-digit number between 1950 and 2099
+    match = re.search(r'\b(19[5-9]\d|20\d{2})\b', text[:1000])
+    if match:
+        return match.group(1)
+    return "" # Return empty string if no year is found
+
 for url in links:
     try:
         # Generate safe filenames from the URL
@@ -24,6 +36,11 @@ for url in links:
         base_name = os.path.splitext(pdf_filename)[0].replace('%20', '_')
         pdf_filepath = os.path.join("downloaded_pdfs", pdf_filename)
         json_filepath = os.path.join("output_json", f"{base_name}.json")
+
+        # If the final JSON file already exists, skip to the next URL
+        if os.path.exists(json_filepath):
+            print(f"✅ Skipping {url}, output file already exists.")
+            continue
 
         print(f"--- Processing {url} ---")
 
@@ -50,10 +67,13 @@ for url in links:
             print(f"⚠️ Warning: No text could be extracted from {pdf_filepath}. Skipping.")
             continue
 
+        # Try to find the year from the document's text
+        year = extract_year_from_text(text)
+
         # 4. Build JSON document
         doc = {
             "title": base_name.replace('_', ' '),
-            "year": "", # This could be inferred from the text later
+            "year": year,
             "sourceURL": url,
             "dateIngested": datetime.date.today().isoformat(),
             "category": "CassationDecision",

@@ -1,4 +1,4 @@
- import requests
+import requests
 from bs4 import BeautifulSoup
 import json
 
@@ -11,7 +11,7 @@ soup = BeautifulSoup(resp.text, "lxml")
 links = []
 for a in soup.select("a[href$='.pdf']"):
     href = a["href"]
-    full = href if href.startswith("http") else f"https://www.fsc.gov.et{href}"
+    full = href if isinstance(href, str) and href.startswith("http") else f"https://www.fsc.gov.et{href}"
     links.append(full)
 
 with open("pdf_links.json", "w", encoding="utf-8") as f:
