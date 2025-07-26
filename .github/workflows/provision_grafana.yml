@@ -1,8 +1,9 @@
 name: Provision Grafana on Render
+
 on:
   workflow_dispatch:
   push:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   provision:
@@ -35,7 +36,10 @@ jobs:
   "serviceDetails": {
     "dockerImage": "grafana/grafana:latest",
     "envVars": [
-      {"key":"GF_SERVER_HTTP_PORT","value":"\${PORT}"}
+      {
+        "key": "GF_SERVER_HTTP_PORT",
+        "value": "${PORT}"
+      }
     ]
   }
 }
