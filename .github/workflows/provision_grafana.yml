@@ -1,0 +1,44 @@
+name: Provision Grafana on Render
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  provision:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Grafana on Render
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+        run: |
+          # 1) Get your account ID
+          ACCOUNT_ID=$(curl -s \
+            -H "Authorization: Bearer $RENDER_API_KEY" \
+            https://api.render.com/v1/accounts \
+            | grep -oP '"id":\s*"\K[^"]+' \
+            | head -1)
+
+          # 2) Tell Render to make Grafana
+          curl -s -X POST https://api.render.com/v1/services \
+            -H "Authorization: Bearer $RENDER_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d @- <<EOF
+{
+  "accountId": "$ACCOUNT_ID",
+  "name": "zufan-grafana",
+  "region": "oregon",
+  "type": "web_service",
+  "env": "docker",
+  "plan": "free",
+  "autoDeploy": true,
+  "serviceDetails": {
+    "dockerImage": "grafana/grafana:latest",
+    "envVars": [
+      {"key":"GF_SERVER_HTTP_PORT","value":"\${PORT}"}
+    ]
+  }
+}
+EOF
+
+          echo "✅ Grafana provisioning is on its way!"
