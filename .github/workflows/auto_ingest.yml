@@ -1,0 +1,32 @@
+name: Auto Ingest Legal Resources
+
+on:
+  push:
+    paths:
+      - 'vol*.pdf'
+      - 'statutes/**'
+      - '**/*.docx'
+  workflow_dispatch:
+
+jobs:
+  bulk_ingest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install curl
+        run: sudo apt-get update && sudo apt-get install -y curl
+
+      - name: Bulk Ingest PDFs & DOCXs
+        env:
+          INGEST_URL: https://zufan-chilot-ingest.onrender.com/upload
+        run: |
+          find . -type f \( -name "vol*.pdf" -o -name "*.docx" -o -path "./statutes/*" \) \
+            | while read file; do
+              echo "⏳ Ingesting $file"
+              curl -s -X POST "${INGEST_URL}?resource_type=$( \
+                [[ $file == vol* ]] && echo cassation_decision || echo statute \
+              )" \
+                -F "file=@${file}" \
+                && echo "✅ Done $file"
+            done
