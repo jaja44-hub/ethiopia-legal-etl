@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>AI Cloud Hub — Demo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <header>
+    <h1>AI Cloud Hub — Demo</h1>
+    <p class="tag">Low‑code dashboard (demo mode). No keys required.</p>
+  </header>
+
+  <main>
+    <section class="panel">
+      <h2>Natural language task</h2>
+      <input id="intent" placeholder="e.g., Deploy React app to Render with Firebase backend" />
+      <button id="run">Run (demo)</button>
+      <pre id="log" class="log"></pre>
+    </section>
+
+    <section class="panel">
+      <h2>Workflow templates</h2>
+      <ul id="templates"></ul>
+    </section>
+
+    <section class="panel">
+      <h2>Status pulse</h2>
+      <div id="pulse" class="pulse">Waiting…</div>
+    </section>
+  </main>
+
+  <footer>
+    <small>Demo UI only — real execution activates when keys are added later.</small>
+  </footer>
+
+  <script src="./app.js"></script>
+</body>
+</html>
