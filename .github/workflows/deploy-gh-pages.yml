@@ -1,0 +1,34 @@
+name: Deploy Static Dashboard to GitHub Pages
+on:
+  push:
+    branches: [ main ]
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Build static dashboard
+        run: |
+          mkdir -p dist
+          cp -r hub/. dist/
+      - name: Update status.log
+        run: |
+          echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) — Auto-deploy to gh-pages" >> status.log
+          tail -n 50 status.log > status.tmp && mv status.tmp status.log
+      - name: Deploy to gh-pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git fetch origin gh-pages || true
+          git worktree add ghp gh-pages || (git worktree add ghp && cd ghp && git checkout --orphan gh-pages && git reset --hard)
+          rm -rf ghp/*
+          cp -r dist/. ghp/
+          cp status.log ghp/
+          touch ghp/.nojekyll
+          cd ghp
+          git add -A
+          git commit -m "deploy: $(date -u +%Y-%m-%dT%H:%M:%SZ)" || exit 0
+          git push -u origin gh-pages
